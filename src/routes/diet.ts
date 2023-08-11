@@ -65,7 +65,7 @@ export async function dietRoutes(app: FastifyInstance) {
   )
 
   app.put(
-    'update/:id',
+    '/update/:id',
     {
       preHandler: [checkSessionIdExists],
     },
@@ -73,10 +73,10 @@ export async function dietRoutes(app: FastifyInstance) {
       const { sessionId } = request.cookies
       const getDietParamsSchema = z.object({
         id: z.string().uuid(),
-        name: z.string(),
-        description: z.string(),
-        date: z.date(),
-        onTheDiet: z.enum(['Y', 'N']),
+        // name: z.string(),
+        // description: z.string(),
+        // date: z.date(),
+        // onTheDiet: z.enum(['Y', 'N']),
       })
 
       const { id } = getDietParamsSchema.parse(request.params)
@@ -87,10 +87,10 @@ export async function dietRoutes(app: FastifyInstance) {
           id,
         })
         .update({
-          name,
-          description,
-          date,
-          onTheDiet,
+          name: 'oi',
+          description: 'ae',
+          date: '10-10-10',
+          onTheDiet: 'Y',
         })
 
       return { diet }
