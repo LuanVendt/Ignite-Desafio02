@@ -70,16 +70,24 @@ export async function dietRoutes(app: FastifyInstance) {
       preHandler: [checkSessionIdExists],
     },
     async (request) => {
-      const { sessionId } = request.cookies
       const getDietParamsSchema = z.object({
         id: z.string().uuid(),
-        // name: z.string(),
-        // description: z.string(),
-        // date: z.date(),
-        // onTheDiet: z.enum(['Y', 'N']),
       })
 
       const { id } = getDietParamsSchema.parse(request.params)
+
+      const updateDietBodySchema = z.object({
+        name: z.string(),
+        description: z.string(),
+        date: z.string(),
+        onTheDiet: z.enum(['Y', 'N']),
+      })
+
+      const { name, description, date, onTheDiet } = updateDietBodySchema.parse(
+        request.body,
+      )
+
+      const sessionId = request.cookies.sessionId
 
       const diet = await knex('diet')
         .where({
@@ -87,26 +95,20 @@ export async function dietRoutes(app: FastifyInstance) {
           id,
         })
         .update({
-          name: 'oi',
-          description: 'ae',
-          date: '10-10-10',
-          onTheDiet: 'Y',
+          name,
+          description,
+          date,
+          onTheDiet,
         })
-
-      return { diet }
     },
   )
 
   app.delete('/delete/:id', async (request, reply) => {
     const createDietBodySchema = z.object({
-      name: z.string(),
-      description: z.string(),
-      onTheDiet: z.enum(['Y', 'N']),
+      id: z.string().uuid(),
     })
 
-    const { name, description, onTheDiet } = createDietBodySchema.parse(
-      request.body,
-    )
+    const { id } = createDietBodySchema.parse(request.params)
 
     let sessionId = request.cookies.sessionId
 
@@ -119,9 +121,14 @@ export async function dietRoutes(app: FastifyInstance) {
       })
     }
 
-    await knex('diet').delete(sessionId)
+    const diet = await knex('diet')
+      .where({
+        session_id: sessionId,
+        id,
+      })
+      .delete(sessionId)
 
-    return reply.status(201).send()
+    // return { diet }
   })
 
   app.post('/', async (request, reply) => {
