@@ -60,6 +60,10 @@ export async function dietRoutes(app: FastifyInstance) {
       const { sessionId } = request.cookies
       const summary = await knex('diet').where('session_id', sessionId)
 
+      const getDietParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+
       return { summary }
     },
   )
@@ -127,8 +131,6 @@ export async function dietRoutes(app: FastifyInstance) {
         id,
       })
       .delete(sessionId)
-
-    // return { diet }
   })
 
   app.post('/', async (request, reply) => {
