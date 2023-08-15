@@ -52,7 +52,7 @@ export async function dietRoutes(app: FastifyInstance) {
   )
 
   app.get(
-    '/summary',
+    '/summary/:id',
     {
       preHandler: [checkSessionIdExists],
     },
@@ -64,7 +64,39 @@ export async function dietRoutes(app: FastifyInstance) {
         id: z.string().uuid(),
       })
 
-      return { summary }
+      const { id } = getDietParamsSchema.parse(request.params)
+
+      const meals = await knex('diet').where({ id })
+
+      const totalMeals = meals.length
+      const dietMeals = meals.filter((meal) => meal.onTheDiet === 'Y')
+      const nonDietMeals = meals.filter((meal) => meal.onTheDiet === 'N')
+
+      let bestDietSequence = ''
+      let currentDietSequence = ''
+      let currentDietSequenceCount = 0
+
+      for (const meal of meals) {
+        if (meal.onTheDiet === 'Y') {
+          currentDietSequenceCount++
+          currentDietSequence += meal.name + ' -> '
+        } else {
+          if (
+            currentDietSequenceCount > bestDietSequence.split(' -> ').length
+          ) {
+            bestDietSequence = currentDietSequence
+          }
+          currentDietSequence = ''
+          currentDietSequenceCount = 0
+        }
+      }
+
+      return {
+        totalMeals,
+        onTheDietMeals: dietMeals.length,
+        nonTheDietMeals: nonDietMeals.length,
+        bestDietSequence: bestDietSequence.slice(0, -4), // Removing the last ' -> '
+      }
     },
   )
 
