@@ -66,7 +66,7 @@ export async function dietRoutes(app: FastifyInstance) {
 
       const { id } = getDietParamsSchema.parse(request.params)
 
-      const meals = await knex('diet').where({ id })
+      const meals = await knex('diet').where('session_id', sessionId)
 
       const totalMeals = meals.length
       const dietMeals = meals.filter((meal) => meal.onTheDiet === 'Y')
@@ -79,7 +79,6 @@ export async function dietRoutes(app: FastifyInstance) {
       for (const meal of meals) {
         if (meal.onTheDiet === 'Y') {
           currentDietSequenceCount++
-          currentDietSequence += meal.name + ' -> '
         } else {
           if (
             currentDietSequenceCount > bestDietSequence.split(' -> ').length
@@ -95,7 +94,7 @@ export async function dietRoutes(app: FastifyInstance) {
         totalMeals,
         onTheDietMeals: dietMeals.length,
         nonTheDietMeals: nonDietMeals.length,
-        bestDietSequence: bestDietSequence.slice(0, -4), // Removing the last ' -> '
+        DietSequence: currentDietSequenceCount,
       }
     },
   )
